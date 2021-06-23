@@ -1,3 +1,7 @@
+/*! @file ad56x.h
+ * @brief Driver source for the AD56x 12-Bit, DAC C driver.
+ */
+
 #include <stdio.h>
 #include "ad56x.h"
 
