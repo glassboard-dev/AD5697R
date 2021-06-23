@@ -27,10 +27,29 @@ void usr_delay_us(uint32_t period) {
 }
 
 int main(void) {
+    ad56x_return_code_t ret = AD56x_RET_OK;
 
-    while(1) {
-        printf("Hello world.\n\r");
-    }
+    // Create an instance of our AD56x device
+    ad56x_dev_t dev;
 
-    return 0;
+    // Provide the hardware abstraction functions for
+    // I2c Read/Write and a micro-second delay function
+    dev.intf.i2c_addr = AD56x_ADDR;
+    dev.intf.write = usr_i2c_write;
+    dev.intf.read = usr_i2c_read;
+    dev.intf.delay_us = usr_delay_us;
+
+    // Set the desired operation mode for our DAC outputs
+    // Enable channel A to run in normal operation
+    ret = ad56x_setOperatingMode(&dev, AD56x_OUTPUT_CH_A, AD56x_OP_MODE_NORMAL);
+
+    // Disable channel B and put a 1K resistance to ground on the output
+    if( ret == AD56x_RET_OK )
+        ret = ad56x_setOperatingMode(&dev, AD56x_OUTPUT_CH_B, AD56x_OP_MODE_1K_TO_GND);
+
+    // Set the DAC output value to 50% of the reference voltage
+    if( ret == AD56x_RET_OK )
+        ret = ad56x_writeChannel(&dev, AD56x_OUTPUT_CH_A, 0x00FF);
+
+    return ret;
 }
