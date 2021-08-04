@@ -186,3 +186,47 @@ void test_ad56x_setOperatingMode_InvalidMode(void) {
 
     TEST_ASSERT_EQUAL_INT(AD56x_RET_INV_PARAM, ret);
 }
+
+/****************************** setReferenceMode ******************************/
+void test_ad56x_setReferenceMode_AllValid(void) {
+    // Execute the function under test
+    ad56x_return_code_t ret = ad56x_setReferenceMode(&ad56x_device, AD56x_REF_ON);
+    TEST_ASSERT_EQUAL_INT(AD56x_RET_OK, ret);
+
+    ret = ad56x_setReferenceMode(&ad56x_device, AD56x_REF_OFF);
+    TEST_ASSERT_EQUAL_INT(AD56x_RET_OK, ret);
+}
+
+void test_ad56x_setReferenceMode_NullDevice(void) {
+    // Execute the function under test
+    ad56x_return_code_t ret = ad56x_setReferenceMode(NULL, AD56x_REF_ON);
+
+    TEST_ASSERT_EQUAL_INT(AD56x_RET_NULL_PTR, ret);
+}
+
+void test_ad56x_setReferenceMode_NullWriteIntf(void) {
+    // Remove our write interface
+    ad56x_device.intf.write = NULL;
+
+    // Execute the function under test
+    ad56x_return_code_t ret = ad56x_setReferenceMode(&ad56x_device, AD56x_REF_ON);
+
+    TEST_ASSERT_EQUAL_INT(AD56x_RET_NULL_PTR, ret);
+}
+
+void test_ad56x_setReferenceMode_InvalidSlaveAddress(void) {
+    // Set the slave adddress to an invalid value
+    ad56x_device.intf.i2c_addr = 0x80;
+
+    // Execute the function under test
+    ad56x_return_code_t ret = ad56x_setReferenceMode(&ad56x_device, AD56x_REF_ON);
+
+    TEST_ASSERT_EQUAL_INT(AD56x_RET_INV_PARAM, ret);
+}
+
+void test_ad56x_setReferenceMode_InvalidRefMode(void) {
+    // Execute the function under test
+    ad56x_return_code_t ret = ad56x_setReferenceMode(&ad56x_device, AD56x_REF__MAX__);
+
+    TEST_ASSERT_EQUAL_INT(AD56x_RET_INV_PARAM, ret);
+}

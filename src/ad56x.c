@@ -27,8 +27,8 @@ typedef union  {
     struct {
         union {
             struct {
-                uint8_t cmd     : 4;    /* Command byte - Command */
                 uint8_t ch      : 4;    /* Command byte - DAC Channel */
+                uint8_t cmd     : 4;    /* Command byte - Command */
             } bits;                     /* Command byte - Bit Field */
             uint8_t byte;               /* Command byte - Byte */
         } command;                      /* Command byte */
@@ -45,28 +45,51 @@ typedef union  {
 } ad56x_dac_register_t;
 
 /*!
- * @brief AD56x Input Shift Register Content
+ * @brief AD56x Operation Mode Content
  */
 typedef union  {
     struct {
         union {
             struct {
-                uint8_t cmd     : 4;    /* Command byte - Command */
                 uint8_t rsvd    : 4;    /* Command byte - RSVD */
+                uint8_t cmd     : 4;    /* Command byte - Command */
             } bits;                     /* Command byte - Bit Field */
             uint8_t byte;               /* Command byte - Byte */
         } command;                      /* Command byte */
         uint8_t rsvd;                   /* RSVD */
         union {
             struct {
-                uint8_t PDB     : 2;    /* Power Mode - CHB */
-                uint8_t rsvd    : 4;    /* RSVD */
                 uint8_t PDA     : 2;    /* Power Mode - CHA */
+                uint8_t rsvd    : 4;    /* RSVD */
+                uint8_t PDB     : 2;    /* Power Mode - CHB */
             } bits;
         } powerMode;                    /* Date low byte */
     } bits;
     uint8_t bytes[3];
 } ad56x_operation_register_t;
+
+/*!
+ * @brief AD56x Reference Mode Content
+ */
+typedef union  {
+    struct {
+        union {
+            struct {
+                uint8_t rsvd    : 4;    /* Command byte - RSVD */
+                uint8_t cmd     : 4;    /* Command byte - Command */
+            } bits;                     /* Command byte - Bit Field */
+            uint8_t byte;               /* Command byte - Byte */
+        } command;                      /* Command byte */
+        uint8_t rsvd;                   /* RSVD */
+        union {
+            struct {
+                uint8_t REF_EN  : 1;    /* Internal Reference Setup */
+                uint8_t rsvd    : 7;    /* RSVD */
+            } bits;
+        } reference;                    /* Date low byte */
+    } bits;
+    uint8_t bytes[3];
+} ad56x_reference_register_t;
 
 /*!
  * @brief This API writes the desired DAC value to the specified channel
@@ -84,7 +107,7 @@ ad56x_return_code_t ad56x_writeChannel(ad56x_dev_t *dev, const ad56x_output_chan
     // Setup the cmd register
     dac_register.bits.command.bits.ch = ch;
     dac_register.bits.command.bits.cmd = AD56x_CMD_WRITE_DAC;
-    dac_register.bits.data_high = outputVal >> 8;
+    dac_register.bits.data_high = outputVal >> 4;
     dac_register.bits.data_low.bits.data = outputVal;
 
     // Write the DAC value to our device.
@@ -100,7 +123,7 @@ ad56x_return_code_t ad56x_setOperatingMode(ad56x_dev_t *dev, const ad56x_output_
     if( (dev == NULL) || (dev->intf.write == NULL) ) {
         return AD56x_RET_NULL_PTR;
     }
-    else if( (ch >= AD56x_OUTPUT_CH__MAX__) || (mode >= AD56x_OP_MODE__MAX__) || (dev->intf.i2c_addr > 0x7F)) {
+    else if( (mode >= AD56x_OP_MODE__MAX__) || (dev->intf.i2c_addr > 0x7F)) {
         return AD56x_RET_INV_PARAM;
     }
 
@@ -129,6 +152,24 @@ ad56x_return_code_t ad56x_setOperatingMode(ad56x_dev_t *dev, const ad56x_output_
 
     // Write the Operation mode values to our device.
     return dev->intf.write(dev->intf.i2c_addr, (uint8_t *)&op_register, sizeof(op_register));
+}
 
-    return AD56x_RET_OK;
+/*!
+ * @brief This API sets enables/disables the internal reference
+ */
+ad56x_return_code_t ad56x_setReferenceMode(ad56x_dev_t *dev, const ad56x_reference_t refSelect) {
+    ad56x_reference_register_t ref_register = {0};
+
+    if( (dev == NULL) || (dev->intf.write == NULL) ) {
+        return AD56x_RET_NULL_PTR;
+    }
+    else if( (refSelect >= AD56x_REF__MAX__) || (dev->intf.i2c_addr > 0x7F)) {
+        return AD56x_RET_INV_PARAM;
+    }
+
+    ref_register.bits.command.bits.cmd = AD56x_CMD_INT_REF_SETUP;
+    ref_register.bits.reference.bits.REF_EN = AD56x_REF_OFF;
+
+    // Write the Reference select mode values to our device.
+    return dev->intf.write(dev->intf.i2c_addr, (uint8_t *)&ref_register, sizeof(ref_register));
 }

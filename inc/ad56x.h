@@ -73,12 +73,22 @@ typedef enum {
  * @brief AD56x Operating Mode
  */
 typedef enum {
-    AD56x_OP_MODE_NORMAL        = 0x00, /* Normal Operation*/
+    AD56x_OP_MODE_NORMAL        = 0x00, /* Normal Operation */
     AD56x_OP_MODE_1K_TO_GND     = 0x01, /* Power-Down - 1kOhm to GND */
     AD56x_OP_MODE_10k_TO_GND    = 0x02, /* Power-Down - 10kOhm to GND */
     AD56x_OP_MODE_TRI_STATE     = 0x03, /* Power-Down - Tri-State */
     AD56x_OP_MODE__MAX__
 } ad56x_operation_mode_t;
+
+
+/*!
+ * @brief AD56x Reference Mode
+ */
+typedef enum {
+    AD56x_REF_ON                = 0x00, /* Reference on */
+    AD56x_REF_OFF               = 0x01, /* Reference off */
+    AD56x_REF__MAX__
+} ad56x_reference_t;
 
 /*!
  * @brief AD56x Device Registers
@@ -134,6 +144,16 @@ ad56x_return_code_t ad56x_writeChannel(ad56x_dev_t *dev, const ad56x_output_chan
  * @return The result of writing the DAC channel
  */
 ad56x_return_code_t ad56x_setOperatingMode(ad56x_dev_t *dev, const ad56x_output_channel_t ch, const ad56x_operation_mode_t mode);
+
+/*!
+ * @brief This API sets enables/disables the internal reference
+ *
+ * @param[in] *dev: Pointer to your ad56x device
+ * @param[in] refSelect: Sets the state of the internal reference (on/off)
+ *
+ * @return The result of writing the DAC channel
+ */
+ad56x_return_code_t ad56x_setReferenceMode(ad56x_dev_t *dev, const ad56x_reference_t refSelect);
 
 #endif // _AD56X_H_
 
