@@ -102,9 +102,13 @@ int main(void) {
     dev.intf.read = usr_i2c_read;
     dev.intf.delay_us = usr_delay_us;
 
+    // Turn off the AD56x internal reference
+    ret = ad56x_setReferenceMode(&dev, AD56x_REF_OFF);
+
     // Set the desired operation mode for our DAC outputs
     // Enable channel A to run in normal operation
-    ret = ad56x_setOperatingMode(&dev, AD56x_OUTPUT_CH_A, AD56x_OP_MODE_NORMAL);
+    if( ret == AD56x_RET_OK )
+        ret = ad56x_setOperatingMode(&dev, AD56x_OUTPUT_CH_A, AD56x_OP_MODE_NORMAL);
 
     // Disable channel B and put a 1K resistance to ground on the output
     if( ret == AD56x_RET_OK )
