@@ -107,7 +107,7 @@ ad5697r_return_code_t ad5697r_writeChannel(ad5697r_dev_t *dev, const ad5697r_out
     // Setup the cmd register
     dac_register.bits.command.bits.ch = ch;
     dac_register.bits.command.bits.cmd = AD5697R_CMD_WRITE_DAC;
-    dac_register.bits.data_high = outputVal >> 8;
+    dac_register.bits.data_high = outputVal >> 4;
     dac_register.bits.data_low.bits.data = outputVal;
 
     // Write the DAC value to our device.
