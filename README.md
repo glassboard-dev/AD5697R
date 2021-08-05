@@ -1,5 +1,5 @@
 # AD5697R - Dual, 12-Bit nanoDAC+ with 2 ppm/°C Reference, I2C Interface
-[![codecov](https://codecov.io/gh/glassboard-dev/ad5697r/branch/main/graph/badge.svg?token=BG7A0OFND7)](https://codecov.io/gh/glassboard-dev/ad5697r)
+[![codecov](https://codecov.io/gh/glassboard-dev/AD5697R/branch/main/graph/badge.svg?token=BG7A0OFND7)](https://codecov.io/gh/glassboard-dev/AD5697R)
 
 C Driver for the Analog Devices ad5697r series of 12bit, dual output, nanoDAC+ ICs. This driver can be included directly into a developers source or a static library can be created and then linked against. Development is done on the **develop** branch, and official releases can be found on the **main** branch.
 
