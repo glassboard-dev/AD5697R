@@ -42,8 +42,8 @@ jobs:
 
     - uses: codecov/codecov-action@v1
       with:
-        token: ${{ secrets.CODECOV_AD56X_TOKEN }}
-        name: CodeCov-AD56x # optional
+        token: ${{ secrets.CODECOV_ad5697r_TOKEN }}
+        name: CodeCov-AD5697R # optional
         files: ./build/artifacts/gcov/GcovCoverageCobertura.xml
         fail_ci_if_error: true # optional (default = false)
         verbose: true # optional (default = false)
