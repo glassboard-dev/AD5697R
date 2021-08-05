@@ -28,6 +28,17 @@ jobs:
     - name: Build - DEMO
       run: cd template/build && make -j8
 
+    - name: Run Unit tests
+      run: cd build && make tests
+
+    - uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_AD56X_TOKEN }}
+        name: CodeCov-AD5697R # optional
+        files: ./build/artifacts/gcov/GcovCoverageCobertura.xml
+        fail_ci_if_error: true # optional (default = false)
+        verbose: true # optional (default = false)
+        
     - name: Extract Firmware Version
       run: |
         echo "VERSION_MAJOR=$(cat inc/ad5697r.h | grep VERSION_MAJOR | awk '{print $3}')" >> $GITHUB_ENV
