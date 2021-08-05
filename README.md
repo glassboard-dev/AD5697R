@@ -1,7 +1,7 @@
-# Dual, 12-Bit nanoDAC+ with 2 ppm/°C Reference, I2C Interface
-[![codecov](https://codecov.io/gh/glassboard-dev/AD56x/branch/main/graph/badge.svg?token=BG7A0OFND7)](https://codecov.io/gh/glassboard-dev/AD56x)
+# AD5697R - Dual, 12-Bit nanoDAC+ with 2 ppm/°C Reference, I2C Interface
+[![codecov](https://codecov.io/gh/glassboard-dev/ad5697r/branch/main/graph/badge.svg?token=BG7A0OFND7)](https://codecov.io/gh/glassboard-dev/ad5697r)
 
-C Driver for the Analog Devices AD56x series of 12bit, dual output, nanoDAC+ ICs. This driver can be included directly into a developers source or a static library can be created and then linked against. Development is done on the **develop** branch, and official releases can be found on the **main** branch.
+C Driver for the Analog Devices ad5697r series of 12bit, dual output, nanoDAC+ ICs. This driver can be included directly into a developers source or a static library can be created and then linked against. Development is done on the **develop** branch, and official releases can be found on the **main** branch.
 
 ## Retrieving the Source
 The source is located on Github and can be either downloaded and included directly into a developers source OR the developer can add this repo as a submodule into their project directory (The latter is the preferred method).
@@ -9,7 +9,7 @@ The source is located on Github and can be either downloaded and included direct
 To include the driver as a git submodule
 ```bash
 $ cd ./${DIR_WHERE_YOU_WANT_TO_ADD_THE_MODULE}
-$ git submodule add https://github.com/glassboard-dev/AD56x.git
+$ git submodule add https://github.com/glassboard-dev/ad5697r.git
 ```
 
 ## Integration
@@ -22,18 +22,18 @@ $ mkdir build && cd build
 $ cmake ..
 $ make
 ```
-The output library (libad56x.a) can be found in the **lib/** folder. Link against this file, and include the ad56x.h header file into your source include directories.
+The output library (libad5697r.a) can be found in the **lib/** folder. Link against this file, and include the ad5697r.h header file into your source include directories.
 ```c
-#include "ad56x.h"
+#include "ad5697r.h"
 ```
 
 #### Adding to your own source/project
 The other option for integrating the source into your project, is to include everything directly into your project
 * Set your include directories to include the driver inc/ folder.
-* Add the ad56x.c to your source list to be compiled.
+* Add the ad5697r.c to your source list to be compiled.
 * Include the API header file wherever you intended to implement the driver source.
 ```c
-#include "ad56x.h"
+#include "ad5697r.h"
 ```
 
 ## Implementing the driver
@@ -63,12 +63,12 @@ Example application and main can be found below:
 ```C
 #include <stdint.h>
 #include <stdio.h>
-#include "mcp342x.h"
+#include "ad5697r.h"
 
-#define MCP342x_ADDR    (0x6E)
+#define ad5697r_ADDR    (0x6E)
 
 int8_t usr_i2c_write(const uint8_t busAddr, const uint8_t *data, const uint32_t len) {
-    mcp342x_return_code_t ret = MCP342x_RET_OK;
+    ad5697r_return_code_t ret = ad5697r_RET_OK;
 
     // Transmit the data to the specified device from the provided
     // data buffer.
@@ -77,7 +77,7 @@ int8_t usr_i2c_write(const uint8_t busAddr, const uint8_t *data, const uint32_t 
 }
 
 int8_t usr_i2c_read(const uint8_t busAddr, uint8_t *data, const uint32_t len) {
-    mcp342x_return_code_t ret = MCP342x_RET_OK;
+    ad5697r_return_code_t ret = ad5697r_RET_OK;
 
     // Received the specified amount of data from the device and store it
     // in the data buffer
@@ -90,37 +90,34 @@ void usr_delay_us(uint32_t period) {
 }
 
 int main(void) {
-    mcp342x_return_code_t ret = MCP342x_RET_OK;
+    ad5697r_return_code_t ret = ad5697r_RET_OK;
 
-    // Create an instance of our mcp342x device
-    mcp342x_dev_t dev;
+    // Create an instance of our ad5697r device
+    ad5697r_dev_t dev;
 
     // Provide the hardware abstraction functions for
     // I2c Read/Write and a micro-second delay function
-    dev.intf.i2c_addr = MCP342x_ADDR;
+    dev.intf.i2c_addr = ad5697r_ADDR;
     dev.intf.write = usr_i2c_write;
     dev.intf.read = usr_i2c_read;
     dev.intf.delay_us = usr_delay_us;
 
-    // Init our desired config
-    dev.registers.bits.config.bits.conv_mode = MCP342x_CM_CONT;
-    dev.registers.bits.config.bits.gain = MCP342x_GAIN_x1;
-    dev.registers.bits.config.bits.sample_rate = MCP342x_SR_60SPS;
+    // Turn off the ad5697r internal reference
+    ret = ad5697r_setReferenceMode(&dev, ad5697r_REF_OFF);
 
-    ret = mcp342x_writeConfig(&dev);
+    // Set the desired operation mode for our DAC outputs
+    // Enable channel A to run in normal operation
+    if( ret == ad5697r_RET_OK )
+        ret = ad5697r_setOperatingMode(&dev, ad5697r_OUTPUT_CH_A, ad5697r_OP_MODE_NORMAL);
 
-    if( MCP342x_RET_OK != ret ) {
-        return 0;
-    }
+    // Disable channel B and put a 1K resistance to ground on the output
+    if( ret == ad5697r_RET_OK )
+        ret = ad5697r_setOperatingMode(&dev, ad5697r_OUTPUT_CH_B, ad5697r_OP_MODE_1K_TO_GND);
 
-    while(1) {
-        ret = mcp342x_sampleChannel(&dev, MCP342x_CH_1);
+    // Set the DAC output value to 50% of the reference voltage
+    if( ret == ad5697r_RET_OK )
+        ret = ad5697r_writeChannel(&dev, ad5697r_OUTPUT_CH_A, 0x00FF);
 
-        if( MCP342x_RET_OK == ret ) {
-            printf("CH1_raw: %d \t CH1_V: %0.2fV", dev.results->outputCode, dev.results->voltage);
-        }
-    }
-
-    return 0;
+    return ret;
 }
 ```
